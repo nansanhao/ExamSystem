@@ -5,7 +5,7 @@
         <div>计算机等级考试</div>
         <div>模拟系统</div>
       </div>
-      
+
       <div class="form">
         <el-tabs type="border-card" stretch="true">
           <el-tab-pane label="登陆">
@@ -30,7 +30,7 @@
             </div>
             <div class="f-btn">
               <el-button class="f-b-login" type="primary">登陆</el-button>
-              <a href="#" class="f-b-forget" >忘记密码?</a>
+              <a href="#" class="f-b-forget">忘记密码?</a>
             </div>
           </el-tab-pane>
           <el-tab-pane label="注册">
@@ -68,23 +68,20 @@
         </el-tabs>
       </div>
     </div>
-<Footer class="footer"/>
-    <!-- <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>-->
+    <Footer class="footer"/>
   </div>
-  
 </template>
 
 <script>
 // @ is an alias to /src
-import Footer from '../components/Footer.vue'
+import Footer from "../components/Footer.vue";
 
 export default {
   name: "home",
   data() {
     return {
       isStu: true,
-      height:window.innerHeight
+      height: window.innerHeight
     };
   },
   components: {
@@ -132,7 +129,7 @@ export default {
   width: 100%;
   margin: 0;
 }
-.f-b-forget{
+.f-b-forget {
   width: 100%;
   text-align: center;
   display: block;
@@ -144,8 +141,8 @@ export default {
 .f-btn {
   margin: 20px 30px;
 }
-.footer{
-  position:absolute;
+.footer {
+  position: absolute;
   bottom: 10px;
 }
 </style>

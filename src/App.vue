@@ -1,6 +1,8 @@
 <template>
   <div id="app">
-    <Home/>
+    <User/>
+    <!-- <Home/> -->
+
     
     <!-- <img src="./assets/logo.png">
     <div>
@@ -17,11 +19,12 @@
 
 <script>
 import Home from './views/Home.vue'
-
+import User from './views/User.vue'
 export default {
   name: 'app',
   components: {
     Home,
+    User
   }
 }
 </script>
@@ -32,7 +35,6 @@ export default {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   
-  color: #2c3e50;
 
 }
 </style>
