@@ -62,8 +62,9 @@
 > ```javascript
 > //发送表单内容
 > {
->     account:""
->     password:""
+>     account:"",
+>     password:"",
+>     isStudent:""
 > }
 > 
 > //返回内容（学生信息）
@@ -99,9 +100,48 @@
 
 > Student：
 >
-> GET　/paper
+> GET　/paper/:id
 >
-> 
+> ```js
+> //发送表单内容
+> {
+>     id:"",
+>     isStudent:""
+> }
+> //返回内容（试卷信息）如果是老师会获得更多信息
+> {
+>     
+> }
+> ```
+>
+> POST   /paper
+>
+> ```js
+> //发送表单内容
+> {
+>     id:"",
+>     operation:"",//0是新建，1是修改，2则删除
+>     problems:[]//题目的id数组
+> }
+> //返回内容
+> {
+>     operation:"",//0是新建，1是修改，2则删除
+>     //state,0则成功，1则失败
+>     state：""
+> }
+> ```
+>
+> POST   /problem 
+>
+> ```js
+> //修改问题，
+> //发送表单内容
+> {
+>     id:"",
+>     operation:"",  //0是新建，1是修改，2则删除
+>     problem:{}//新建的题目或者修改后的题目
+> }
+> ```
 >
 > 
 

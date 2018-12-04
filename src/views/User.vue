@@ -1,5 +1,6 @@
 <template>
   <div class="user">
+    <Navbar/>
     <div class="content">
       <div class="u-wrap">
         <div class="avatar-wrap">
@@ -11,7 +12,11 @@
           <div class="i-name-wrap">
             <div class="name">{{user.name}}</div>
             <div class="identity">{{getIdentity}}</div>
-            <div class="gender">{{user.gender}}</div>
+            <div class="gender">
+              <img v-if="user.gender=='男'" src="../assets/icons/male.png" alt="男">
+              <img v-if="user.gender=='女'" src="../assets/icons/female.png" alt="女">
+            </div>
+            <i class="el-icon-setting"></i>
           </div>
           <div class="i-other">
             <div class="i-o-item">
@@ -31,7 +36,7 @@
       </div>
       <div class="record">
         <div class="r-title">
-          <i class="el-icon-edit"></i>做题记录
+          <i class="el-icon-edit"></i>&nbsp;&nbsp;做题记录
         </div>
         <el-card
           shadow="hover"
@@ -54,25 +59,23 @@
                 <div class="r-i-timeconsuming">耗时：{{item.timeConsuming}}</div>
               </div>
               <div class="r-i-score">
-                  <div class="r-i-totalscore">
-                      总分：{{item.total}}
-                  </div>
-                  <div class="r-i-totalscore">
-                      得分：
-                  </div>
-                  <div class="r-i-userscore">
-                      {{item.score}}
-                  </div>
+                <div class="r-i-totalscore">总分：{{item.total}}</div>
+                <div class="r-i-totalscore">得分：</div>
+                <div class="r-i-userscore">{{item.score}}</div>
               </div>
             </div>
           </div>
         </el-card>
       </div>
     </div>
+    <Footer class="footer"/>
   </div>
 </template>
 
 <script>
+import Footer from "../components/Footer";
+import Navbar from "../components/Navbar"
+
 export default {
   name: "user",
   data() {
@@ -147,18 +150,23 @@ export default {
       return this.isStu == true ? "学生" : "老师";
     }
   },
-  components: {}
+  components: {
+    Footer,
+    Navbar
+  }
 };
 </script>
 
 <style scoped>
 .user {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 }
 .content {
   border-left: 1px solid #ddd;
   border-right: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
   padding: 20px 30px;
   width: 1040px;
 }
@@ -183,11 +191,17 @@ export default {
   line-height: 30px;
 }
 .identity {
-  margin: 0 20px;
+  margin: 0 10px;
   padding: 4px 8px;
-  color: #409eff;
+  color: white;
   font-size: 16px;
   border-radius: 12px;
+  background-color: #009688;
+}
+.gender {
+  display: flex;
+  align-items: center;
+  flex: 1;
 }
 .i-other {
   display: flex;
@@ -227,12 +241,13 @@ export default {
   align-items: center;
 }
 .r-info-2 {
-    display: flex;
+  display: flex;
   align-items: flex-end;
-    padding: 20px 0 0 0;
+  padding: 20px 0 0 0;
 }
 .r-item {
   margin: 20px 0;
+  cursor: pointer;
 }
 .r-i-name {
   font-size: 18px;
@@ -247,25 +262,32 @@ export default {
   color: rgb(95, 95, 95);
 }
 
-.r-i-time{
-    display: flex;
-    align-items: flex-end;
-    flex:1;
-    font-size: 16px;
-    
+.r-i-time {
+  display: flex;
+  align-items: flex-end;
+  flex: 1;
+  font-size: 16px;
 }
-.r-i-timelimit{
-    margin-right: 20px;
+.r-i-timelimit {
+  margin-right: 20px;
 }
-.r-i-score{
-    display: flex;
-    align-items: flex-end;
+.r-i-score {
+  display: flex;
+  align-items: flex-end;
 }
-.r-i-totalscore{
-    margin-right: 20px;
+.r-i-totalscore {
+  margin-right: 20px;
 }
-.r-i-userscore{
-    color:#009688 ;
-    font-size: 40px;
+.r-i-userscore {
+  color: #009688;
+  font-size: 40px;
+}
+.footer {
+  margin: 20px 0;
+}
+
+.el-icon-setting {
+  font-size: 24px;
+  cursor: pointer;
 }
 </style>
