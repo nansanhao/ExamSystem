@@ -1,4 +1,5 @@
 <template>
+
   <div class="home" :style="{height:height+'px'}">
     <div class="content">
       <div class="title">
@@ -29,7 +30,7 @@
               </el-radio-group>
             </div>
             <div class="f-btn">
-              <el-button class="f-b-login" type="primary">登陆</el-button>
+              <el-button class="f-b-login" type="primary" @click="login">登陆</el-button>
               <a href="#" class="f-b-forget">忘记密码?</a>
             </div>
           </el-tab-pane>
@@ -86,6 +87,11 @@ export default {
   },
   components: {
     Footer
+  },
+  methods:{
+    login(){
+      this.$router.push('user')
+    }
   }
 };
 </script>
