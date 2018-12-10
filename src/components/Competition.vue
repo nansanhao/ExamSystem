@@ -1,5 +1,5 @@
 <template>
-    <div class="competition">
+    <div class="c-competition">
         <div class="c-question">
             {{index+1+' . '+competition.question}}
         </div>
@@ -11,9 +11,6 @@
                 <div class="c-a-input">
                     <input type="text">
                 </div>
-                
-                
-                
             </div>
             
         </div>
@@ -31,8 +28,13 @@
 </script>
 
 <style scoped>
+.c-competition{
+    padding: 8px 10px;
+}
 .c-a-item{
-    padding: 2px 4px;
+    padding: 4px 10px;
+    display: flex;
+    align-items: center;
 }
 .c-a-index{
     display: inline-block;

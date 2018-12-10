@@ -30,4 +30,7 @@
   border-right: 1px solid #ddd;
   border-bottom: 1px solid #ddd;
 }
+.aside-r,.aside-l{
+    width: 150px;
+}
 </style>

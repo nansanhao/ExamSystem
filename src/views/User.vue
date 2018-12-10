@@ -42,8 +42,9 @@
           shadow="hover"
           body-style="padding:20px;;"
           class="r-item"
-          v-for="item in papers"
-          :key="item.id"
+          v-for="(item,index) in papers"
+          :key="index"
+          @click.native="GetPaper(index)"
         >
           <div>
             <div class="r-info-1">
@@ -149,6 +150,12 @@ export default {
     getIdentity() {
       return this.isStu == true ? "学生" : "老师";
     }
+  },
+  methods:{
+      GetPaper(index){
+        
+        this.$router.push('paper');
+      }
   },
   components: {
     Footer,
