@@ -9,6 +9,7 @@ import Paper from './views/Paper.vue'
 
 
 export default new Router({
+    mode: 'history',
     routes: [
         {
             path: '/',
