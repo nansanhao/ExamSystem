@@ -85,8 +85,6 @@
 > }
 > ```
 >
-> 
->
 > GET    /teacher/:id
 >
 > ```js
@@ -143,7 +141,22 @@
 > }
 > ```
 >
-> 
+
+#### 新增api
+
+>获得题库的试卷
+>
+>GET    /papers?type=&offset=&limit=
+>
+>获得学生做过的试卷
+>
+>GET    /student/papers？id=&offset=&limit=
+>
+>获得老师建立的试卷
+>
+>GET    /teacher/papers？id=&offset=&limit=
+
+
 
 
 ## Project setup
