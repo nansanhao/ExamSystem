@@ -84,7 +84,7 @@ import Footer from "../components/Footer";
 import Content from "../components/Content";
 import SingleChoice from "../components/SingleChoice";
 import Competition from "../components/Competition";
-
+import {mapGetters,mapActions,mapMutations} from 'vuex'
 export default {
   name: "paper",
   data() {
@@ -169,6 +169,9 @@ export default {
     };
   },
   methods: {
+      ...mapMutations([
+          'init'
+      ]),
     addAnswer() {
       this.focusQuestion.answer.push("");
     },
@@ -179,9 +182,20 @@ export default {
 
     },
     qusetioneDelete(type){
-      
+
     }
   },
+    created() {
+        if(!this.$store.state.user.name){
+            if(sessionStorage.getItem("ES_User")){
+                this.init('reload');
+            }else {
+                console.log("无登陆状态，返回主页");
+                this.$router.push({name: 'home'});
+            }
+        }
+
+    },
   components: {
     Navbar,
     Footer,
