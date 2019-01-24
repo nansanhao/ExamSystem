@@ -50,7 +50,7 @@ export default {
 }
 .editable{
   border: 4px solid white;
-  display: flex;
+  
 }
 .editable:hover {
   border: 4px solid #42b983;

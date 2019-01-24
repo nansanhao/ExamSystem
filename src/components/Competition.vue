@@ -1,5 +1,5 @@
 <template>
-    <div class="c-competition">
+    <div :class=" [{editable:!isStu},'c-competition']">
         <div class="c-question">
             {{index+1+' . '+competition.question}}
         </div>
@@ -14,7 +14,12 @@
             </div>
             
         </div>
+        <div class="s-c-action" v-if="!isStu">
+            <el-button type="primary" icon="el-icon-edit" v-on:click="$emit('question-edit')" circle></el-button>
+            <el-button type="danger" icon="el-icon-delete" v-on:click="$emit('question-delete')" circle></el-button>
+        </div>
     </div>
+    
 </template>
 
 <script>
@@ -22,7 +27,8 @@
         name:'competition',
         props:{
             competition:Object,
-            index:Number
+            index:Number,
+            isStu:Boolean
         }
     }
 </script>
@@ -55,5 +61,20 @@ input{
 }
 input:focus{
     outline: none;
+}
+/* 控制能否编辑 */ 
+.editable{
+  border: 4px solid white;
+  padding: 10px;
+}
+.editable:hover {
+  border: 4px solid #42b983;
+  border-radius: 8px;
+}
+.s-c-action{
+  display: none;
+}
+.editable:hover .s-c-action{
+  display: block;
 }
 </style>

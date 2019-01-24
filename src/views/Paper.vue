@@ -16,13 +16,13 @@
         <div class="single-choice">
           <h3>一. 单项选择题：本大题共24小题，每小题1分，共24分。在每小题列出的备选项中 只有一项是最符合题目要求的，请将其选出</h3>
           <div v-for="(item,index) in paper.singleChoice" :key="index">
-            <SingleChoice @question-edit="qusetioneEdit('single-choice')" @question-delete="questionDelete('single-choice')" :isStu="false" :SC="item" :index="index"></SingleChoice>
+            <SingleChoice @question-edit="qusetioneEdit('single-choice',index)" @question-delete="questionDelete('single-choice',index)" :isStu="false" :SC="item" :index="index"></SingleChoice>
           </div>
         </div>
         <div class="competition">
           <h3>二. 填空题：本大题共15空，每空1分，共15分。</h3>
           <div v-for="(item,index) in paper.competition" :key="index">
-            <Competition :competition="item" :index="index"></Competition>
+            <Competition @question-edit="qusetioneEdit('competition',index)" @question-delete="questionDelete('competition',index)" :competition="item" :index="index" :isStu="false"></Competition>
           </div>
         </div>
         <div class="submit">
@@ -35,14 +35,14 @@
         </div>
       </template>
     </Content>
-    <el-button type="text" @click="dialogVisible = true">点击打开 Dialog</el-button>
+    <!-- <el-button type="text" @click="dialogVisible = true">点击打开 Dialog</el-button> -->
 
     <el-dialog title="题目修改" :visible.sync="dialogVisible" width="35%">
       <el-form :label-position="right" label-width="70px" :model="focusQuestion">
         <el-form-item label="问题名称">
           <el-input v-model="focusQuestion.question"></el-input>
         </el-form-item>
-        <div class="focus-question-s" v-if="focusQuestion.A">
+        <div class="focus-question-s" v-if="focusQuestion.type=='single-choice'">
           <el-form-item label="答案A">
             <el-input v-model="focusQuestion.A"></el-input>
           </el-form-item>
@@ -56,7 +56,7 @@
             <el-input v-model="focusQuestion.D"></el-input>
           </el-form-item>
         </div>
-        <div class="focus-question-c" v-else>
+        <div class="focus-question-c" v-else-if="focusQuestion.type=='competition'">
           <el-form-item
             v-for="(answer,index) in focusQuestion.answer"
             :label="'答案'+(index+1)"
@@ -71,7 +71,7 @@
       <div slot="footer" class="dialog-footer">
         <el-button v-if="!focusQuestion.A" @click="addAnswer">添加答案</el-button>
         <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+        <el-button type="primary" @click="editConfirm">确 定</el-button>
       </div>
     </el-dialog>
     <Footer/>
@@ -96,6 +96,8 @@ export default {
         competition: []
       },
       focusQuestion: {
+        type:"single-choice",
+        index:"0",
         id: "",
         question: "未来宽带、大容量通信网络的优选方案是",
         A: "多媒体网络",
@@ -117,7 +119,7 @@ export default {
         singleChoice: [
           {
             id: "",
-            question: "未来宽带、大容量通信网络的优选方案是",
+            question: "未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是",
             A: "多媒体网络",
             B: "全光网络",
             C: "移动互联网",
@@ -178,10 +180,50 @@ export default {
     removeAnswer(index) {
       this.focusQuestion.answer.splice(index, 1);
     },
-    qusetioneEdit(type){
+    qusetioneEdit(type,index){
+      console.log("问题编辑"+type);
+      if(type=="single-choice"){
+        this.focusQuestion={
+          type,
+          index,
+          ...this.paper.singleChoice[index]
+        };
+        //拉起修改问题模态框
+        this.dialogVisible = true;
+        
+      }else if(type=="competition"){
+        this.focusQuestion={
+          type,
+          index,
+          ...this.paper.competition[index]
+        };
+        //拉起修改问题模态框
+        this.dialogVisible = true;
 
+      }
+      
     },
-    qusetioneDelete(type){
+    qusetioneDelete(type,index){
+      console.log("问题删除")
+    },
+    // 问题编辑后确认
+    editConfirm(){
+      let focusQuestion=this.focusQuestion;
+      let {type,index}=focusQuestion;
+      delete focusQuestion.type;
+      delete focusQuestion.index;
+
+      if(type=="single-choice"){
+        this.paper.singleChoice[index]=focusQuestion;
+        //关闭 修改问题模态框
+        this.dialogVisible = false;
+      }else if(type=="competition"){
+        this.paper.competition[index]=focusQuestion;
+        //关闭 修改问题模态框
+        this.dialogVisible = false;
+      }
+
+      //TODO  发送修改题目的请求
 
     }
   },
@@ -191,7 +233,7 @@ export default {
                 this.init('reload');
             }else {
                 console.log("无登陆状态，返回主页");
-                this.$router.push({name: 'home'});
+                //this.$router.push({name: 'home'});
             }
         }
 
