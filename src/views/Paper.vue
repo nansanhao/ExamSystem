@@ -8,21 +8,36 @@
       <template slot="content">
         <h2>
           {{paper.name}}
-          <span class="c-subtitle">总分：100</span>
-          <span class="c-subtitle">时间：90分钟</span>
-          <span class="c-subtitle">2018-08-03</span>
-
+          <span class="c-subtitle">总分：{{paper.total}}</span>
+          <span class="c-subtitle">限时：{{paper.timeLimit}}分钟</span>
+          <span class="c-subtitle">难度：{{paper.level}}</span>
+          <span class="c-subtitle">创建日期：{{paper.date}}</span>
+          <span class="c-subtitle">
+            <el-button type="primary" icon="el-icon-edit" round @click="PEDialogVisible = true">编辑试卷</el-button>
+          </span>
         </h2>
         <div class="single-choice">
           <h3>一. 单项选择题：本大题共24小题，每小题1分，共24分。在每小题列出的备选项中 只有一项是最符合题目要求的，请将其选出</h3>
           <div v-for="(item,index) in paper.singleChoice" :key="index">
-            <SingleChoice @question-edit="qusetioneEdit('single-choice',index)" @question-delete="questionDelete('single-choice',index)" :isStu="false" :SC="item" :index="index"></SingleChoice>
+            <SingleChoice
+              @question-edit="qusetioneEdit('single-choice',index)"
+              @question-delete="questionDelete('single-choice',index)"
+              :isStu="false"
+              :SC="item"
+              :index="index"
+            ></SingleChoice>
           </div>
         </div>
         <div class="competition">
           <h3>二. 填空题：本大题共15空，每空1分，共15分。</h3>
           <div v-for="(item,index) in paper.competition" :key="index">
-            <Competition @question-edit="qusetioneEdit('competition',index)" @question-delete="questionDelete('competition',index)" :competition="item" :index="index" :isStu="false"></Competition>
+            <Competition
+              @question-edit="qusetioneEdit('competition',index)"
+              @question-delete="questionDelete('competition',index)"
+              :competition="item"
+              :index="index"
+              :isStu="false"
+            ></Competition>
           </div>
         </div>
         <div class="submit">
@@ -30,14 +45,14 @@
         </div>
       </template>
       <template slot="right">
-        <div class="countdown">完成度：
+        <!-- <div class="countdown">完成度：
           <el-progress type="circle" width="60" :percentage="80" color="#8e71c7"></el-progress>
-        </div>
+        </div>-->
       </template>
     </Content>
-    <!-- <el-button type="text" @click="dialogVisible = true">点击打开 Dialog</el-button> -->
-
-    <el-dialog title="题目修改" :visible.sync="dialogVisible" width="35%">
+  
+    <!-- 题目编辑的模态框 -->
+    <el-dialog title="题目修改" :visible.sync="QEDialogVisible" width="35%">
       <el-form :label-position="right" label-width="70px" :model="focusQuestion">
         <el-form-item label="问题名称">
           <el-input v-model="focusQuestion.question"></el-input>
@@ -70,8 +85,31 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button v-if="!focusQuestion.A" @click="addAnswer">添加答案</el-button>
-        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button @click="QEDialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="editConfirm">确 定</el-button>
+      </div>
+    </el-dialog>
+    <!-- <el-button type="text" @click="PEDialogVisible = true">打开嵌套表单的 Dialog</el-button> -->
+    <!-- 试卷编辑的模态框 -->
+    <el-dialog title="试卷信息" :visible.sync="PEDialogVisible" width="35%">
+      <el-form :model="paper" label-width="70px">
+        <el-form-item label="试卷名称" >
+          <el-input v-model="paper.name" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="试卷难度" >
+          <el-input-number v-model="paper.level" @change="handleChange" :min="1" :max="10" label="难度"></el-input-number>
+        </el-form-item>
+        <el-form-item label="试卷总分" >
+          <el-input v-model="paper.total" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="考试时间" >
+          <el-input v-model="paper.timeLimit" autocomplete="off"><template slot="append">分钟</template></el-input>
+        </el-form-item>
+        
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <!-- <el-button @click="PEDialogVisible = false">PEDialogVisible = false取 消</el-button> -->
+        <el-button type="primary" @click="PEConfirm">确 定</el-button>
       </div>
     </el-dialog>
     <Footer/>
@@ -84,20 +122,21 @@ import Footer from "../components/Footer";
 import Content from "../components/Content";
 import SingleChoice from "../components/SingleChoice";
 import Competition from "../components/Competition";
-import {mapGetters,mapActions,mapMutations} from 'vuex'
+import { mapGetters, mapActions, mapMutations } from "vuex";
 export default {
   name: "paper",
   data() {
     return {
-      dialogVisible: false,
+      QEDialogVisible: false,
+      PEDialogVisible:false,
       time: 15,
       answer: {
         singleChoice: [],
         competition: []
       },
       focusQuestion: {
-        type:"single-choice",
-        index:"0",
+        type: "single-choice",
+        index: "0",
         id: "",
         question: "未来宽带、大容量通信网络的优选方案是",
         A: "多媒体网络",
@@ -114,12 +153,13 @@ export default {
         total: "100",
         score: "85",
         date: "2018-07-25",
-        timeConsuming: "35分钟",
-        timeLimit: "60分钟",
+        timeConsuming: "35",
+        timeLimit: "60",
         singleChoice: [
           {
             id: "",
-            question: "未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是",
+            question:
+              "未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是",
             A: "多媒体网络",
             B: "全光网络",
             C: "移动互联网",
@@ -171,73 +211,94 @@ export default {
     };
   },
   methods: {
-      ...mapMutations([
-          'init'
-      ]),
+    ...mapMutations(["init"]),
     addAnswer() {
       this.focusQuestion.answer.push("");
     },
     removeAnswer(index) {
       this.focusQuestion.answer.splice(index, 1);
     },
-    qusetioneEdit(type,index){
-      console.log("问题编辑"+type);
-      if(type=="single-choice"){
-        this.focusQuestion={
+    // 问题编辑
+    qusetioneEdit(type, index) {
+      console.log("问题编辑" + type);
+      if (type == "single-choice") {
+        this.focusQuestion = {
           type,
           index,
           ...this.paper.singleChoice[index]
         };
         //拉起修改问题模态框
-        this.dialogVisible = true;
-        
-      }else if(type=="competition"){
-        this.focusQuestion={
+        this.QEDialogVisible = true;
+      } else if (type == "competition") {
+        this.focusQuestion = {
           type,
           index,
           ...this.paper.competition[index]
         };
         //拉起修改问题模态框
-        this.dialogVisible = true;
-
+        this.QEDialogVisible = true;
       }
-      
     },
-    qusetioneDelete(type,index){
-      console.log("问题删除")
+
+    questionDelete(type, index) {
+      console.log("问题删除");
+
+      this.$confirm("此操作将删除该问题, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          //TODO 删除问题操作
+
+          this.$notify.success({
+            title: "成功",
+            message: "删除成功！"
+          });
+        })
+        .catch(() => {
+          this.$notify.info({
+            title: "消息",
+            message: "已取消删除"
+          });
+        });
     },
     // 问题编辑后确认
-    editConfirm(){
-      let focusQuestion=this.focusQuestion;
-      let {type,index}=focusQuestion;
+    editConfirm() {
+      let focusQuestion = this.focusQuestion;
+      let { type, index } = focusQuestion;
       delete focusQuestion.type;
       delete focusQuestion.index;
 
-      if(type=="single-choice"){
-        this.paper.singleChoice[index]=focusQuestion;
+      if (type == "single-choice") {
+        this.paper.singleChoice[index] = focusQuestion;
         //关闭 修改问题模态框
-        this.dialogVisible = false;
-      }else if(type=="competition"){
-        this.paper.competition[index]=focusQuestion;
+        this.QEDialogVisible = false;
+      } else if (type == "competition") {
+        this.paper.competition[index] = focusQuestion;
         //关闭 修改问题模态框
-        this.dialogVisible = false;
+        this.QEDialogVisible = false;
       }
 
       //TODO  发送修改题目的请求
-
+    },
+    //试卷编辑后确认
+    PEConfirm(){
+      let that=this;
+      // 将试卷编辑结果发个后台
+      that.PEDialogVisible = false
     }
   },
-    created() {
-        if(!this.$store.state.user.name){
-            if(sessionStorage.getItem("ES_User")){
-                this.init('reload');
-            }else {
-                console.log("无登陆状态，返回主页");
-                //this.$router.push({name: 'home'});
-            }
-        }
-
-    },
+  created() {
+    if (!this.$store.state.user.name) {
+      if (sessionStorage.getItem("ES_User")) {
+        this.init("reload");
+      } else {
+        console.log("无登陆状态，返回主页");
+        //this.$router.push({name: 'home'});
+      }
+    }
+  },
   components: {
     Navbar,
     Footer,
@@ -263,7 +324,7 @@ export default {
 .right {
   width: 100px;
 }
-.c-subtitle{
+.c-subtitle {
   font-size: 14px;
   font-weight: normal;
   margin-left: 40px;
