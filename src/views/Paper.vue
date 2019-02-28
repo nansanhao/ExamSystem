@@ -25,6 +25,7 @@
               :isStu="false"
               :SC="item"
               :index="index"
+              v-model="item.myAnswer"
             ></SingleChoice>
           </div>
         </div>
@@ -37,6 +38,7 @@
               :competition="item"
               :index="index"
               :isStu="false"
+              :myAnswer.sync="item.myAnswer"
             ></Competition>
           </div>
         </div>
@@ -70,6 +72,9 @@
           <el-form-item label="答案D">
             <el-input v-model="focusQuestion.D"></el-input>
           </el-form-item>
+          <el-form-item label="答案">
+            <el-input v-model="focusQuestion.myAnswer"></el-input>
+          </el-form-item>
         </div>
         <div class="focus-question-c" v-else-if="focusQuestion.type=='competition'">
           <el-form-item
@@ -80,6 +85,9 @@
             <el-input v-model="focusQuestion.answer[index]">
               <el-button slot="append" @click.prevent="removeAnswer(index)">删除</el-button>
             </el-input>
+            <!-- <div>
+              {{focusQuestion.myAnswer}}
+            </div> -->
           </el-form-item>
         </div>
       </el-form>
@@ -92,7 +100,7 @@
     <!-- <el-button type="text" @click="PEDialogVisible = true">打开嵌套表单的 Dialog</el-button> -->
     <!-- 试卷编辑的模态框 -->
     <el-dialog title="试卷信息" :visible.sync="PEDialogVisible" width="35%">
-      <el-form :model="paper" label-width="70px">
+      <el-form :model="paper" label-width="90px">
         <el-form-item label="试卷名称" >
           <el-input v-model="paper.name" autocomplete="off"></el-input>
         </el-form-item>
@@ -103,7 +111,13 @@
           <el-input v-model="paper.total" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="考试时间" >
-          <el-input v-model="paper.timeLimit" autocomplete="off"><template slot="append">分钟</template></el-input>
+          <el-input v-model="paper.timeLimit" autocomplete="off"><template slot="append">分</template></el-input>
+        </el-form-item>
+        <el-form-item label="选择题分值" >
+          <el-input v-model="paper.scorePerSC" autocomplete="off"><template slot="append">分每题</template></el-input>
+        </el-form-item>
+        <el-form-item label="填空题分值" >
+          <el-input v-model="paper.scorePerC" autocomplete="off"><template slot="append">分每空</template></el-input>
         </el-form-item>
         
       </el-form>
@@ -135,76 +149,108 @@ export default {
         competition: []
       },
       focusQuestion: {
-        type: "single-choice",
-        index: "0",
-        id: "",
-        question: "未来宽带、大容量通信网络的优选方案是",
-        A: "多媒体网络",
-        B: "全光网络",
-        C: "移动互联网",
-        D: "虚拟网络",
-        answer: ["接收方窗口", "未来窗口"]
+        
       },
       paper: {
         id: "0",
-        name: "计算机二级网络考试",
+        name: "软件工程开发考试",
 
-        level: "2",
+        level: "3",
         total: "100",
         score: "85",
         date: "2018-07-25",
         timeConsuming: "35",
         timeLimit: "60",
+        scorePerSC:5,
+        scorePerC:2,
         singleChoice: [
           {
-            id: "",
+            id: "0",
             question:
-              "未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是未来宽带、大容量通信网络的优选方案是",
-            A: "多媒体网络",
-            B: "全光网络",
-            C: "移动互联网",
-            D: "虚拟网络",
-            answer: ""
+              "在软件开发过程中，我们可以采用不同的过程模型，下列有关 增量模型描述正确的是（ ）",
+            A: "是一种线性开发模型，具有不可回溯性",
+            B: "把待开发的软件系统模块化，将每个模块作为一个增量组件，从而分批次地分析、设计、编码和测试这些增量组件",
+            C: "适用于已有产品或产品原型（样品），只需客户化的工程项目",
+            D: "软件开发过程每迭代一次，软件开发又前进一个层次",
+            answer: "",
+            myAnswer:""
           },
           {
-            id: "",
-            question: "对于点-点线路的通信子网，其采用的基本拓扑结构可以是",
-            A: "星形",
-            B: "无线通信型",
-            C: "总线形",
-            D: "卫星通信型",
-            answer: ""
+            id: "1",
+            question: "下面有关值类型和引用类型描述正确的是？（ ）",
+            A: "值类型的变量赋值只是进行数据复制，创建一个同值的新对象，而引用类型变量赋值，仅仅是把对象的引用的指针赋值给变量，使它们共用一个内存地址。",
+            B: "值类型数据是在栈上分配内存空间，它的变量直接包含变量的实例，使用效率相对较高。而引用类型数据是分配在堆上。",
+            C: "引用类型一般都具有继承性，但是值类型一般都是封装的，因此值类型不能作为其他任何类型的基类。",
+            D: "值类型变量的作用域主要是在栈上分配内存空间内，而引用类型变量作用域主要在分配的堆上。",
+            answer: "",
+            myAnswer:""
           },
           {
-            id: "",
-            question: "下列关于环形拓扑结构的优点表述错误的是",
-            A: "电缆长度短",
-            B: "网络性能稳定",
-            C: "可使用光纤",
-            D: "故障检测容易",
-            answer: ""
+            id: "2",
+            question: "如何在多线程中避免发生死锁？（ ）",
+            A: "允许进程同时访问某些资源。",
+            B: "允许进程强行从占有者那里夺取某些资源。",
+            C: "进程在运行前一次性地向系统申请它所需要的全部资源。",
+            D: "把资源事先分类编号，按号分配，使进程在申请，占用资源时不会形成环路。",
+            answer: "",
+            myAnswer:""
+          },
+          {
+            id: "3",
+            question: "以下为求0到1000以内所有奇数和的算法，从中选出描述正确的算法。（ ）",
+            A: "①s=1；②i=1；③i=i+2；④s=s+i；⑤如果i≤1000，则返回③；⑥结束",
+            B: "①s=0；②i=1；③i=i+2；④s=s+i；⑤如果i≤1000，则返回③；⑥结束",
+            C: "①s=1；②i=1；③s=s+i；④i=i+2；⑤如果i≤1000，则返回③；⑥结束",
+            D: "①s=1；②i=1；③i=i+2；④s=s+i；⑤如果i≤1000，则返回③；⑥结束",
+            answer: "",
+            myAnswer:""
+          },
+          {
+            id: "4",
+            question: "关于递归法的说法不正确的是（ ）",
+            A: "程序结构更简洁",
+            B: "占用CPU的处理时间更多",
+            C: "要消耗大量的内存空间，程序执行慢，甚至无法执行",
+            D: "递归法比递推法的执行效率更高",
+            answer: "",
+            myAnswer:""
+          },
+          {
+            id: "5",
+            question: "下面是一段关于计算变量s的算法： ①变量s的初值是0 ②变量i从1起循环到n，此时变量s的值由下面的式子表达式计算 ③s=s+(-1)*i ④输出变量s的值 这个计算s值的算法中，s的代数式表示是（ ）",
+            A: "1-2+3-4+„+(-1)n*(n-1)",
+            B: "1-2+3-4+„+(-1)n-1*n",
+            C: "1+2+3+4+...+(n-1)+n",
+            D: "-1-2-3-4-...-n",
+            answer: "",
+            myAnswer:""
           }
+
         ],
         competition: [
           {
             question:
               "计算机网络由负责信息处理的资源子网和负贵信息传递的_______组成。",
-            answer: ["接收方窗口"]
+            answer: ["接收方窗口"],
+            myAnswer:[" "]
           },
           {
             question:
               "计算机网络的功能主要表现在硬件、软件资源的共享以及用户间______ 三个方面。",
-            answer: ["接收方窗口"]
+            answer: ["接收方窗口"],
+            myAnswer:[" "]
           },
           {
             question:
               ".按照网络采用的传输技术可将计算机网络分为广播式网络和_________网络，还有_________等事情，软件资源的共享以及用户间______ 三个方面。",
-            answer: ["接收方窗口", "", ""]
+            answer: ["接收方窗口","sad", "ASD"],
+            myAnswer:[" "," "," "]
           },
           {
             question:
               ".网络体系结构是计算机网络各层次结构模型及其_____的集合。",
-            answer: ["接收方窗口"]
+            answer: ["接收方窗口"],
+            myAnswer:[" "]
           }
         ]
       }

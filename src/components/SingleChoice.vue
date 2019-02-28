@@ -3,7 +3,7 @@
     <div class="s-c-wrap">
       <div class="s-c-question">{{index+1+" . "+SC.question}}</div>
       <div class="s-c-answer">
-        <el-radio-group v-model="SC.answer">
+        <el-radio-group v-model="myAnswer" @change="handleChange">
           <el-radio class="radio" label="A">{{SC.A}}</el-radio>
           <el-radio class="radio" label="B">{{SC.B}}</el-radio>
           <el-radio class="radio" label="C">{{SC.C}}</el-radio>
@@ -22,12 +22,19 @@
 export default {
   name: "singlechoice",
   data() {
-    return {};
+    return {
+      myAnswer:this.value
+    };
   },
   props: {
     isStu:Boolean,
     index: Number,
     SC: Object
+  },
+  methods:{
+    handleChange(value){
+      this.$emit('input',value)
+    }
   }
 };
 </script>
@@ -42,11 +49,14 @@ export default {
 .s-c-answer {
   margin-top: 4px;
   margin-left: 10px;
+  
 }
+
 .radio {
   display: block;
   margin-left: 0 !important;
   padding: 4px 0;
+  
 }
 .editable{
   border: 4px solid white;
