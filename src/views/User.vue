@@ -36,7 +36,10 @@
       </div>
       <div class="record">
         <div class="r-title">
-          <i class="el-icon-edit"></i>&nbsp;&nbsp;做题记录
+          <i class="el-icon-edit"></i>&nbsp;&nbsp;做题记录&nbsp;&nbsp;
+          <el-tooltip class="item" effect="dark" content="新建试卷" placement="top-start">
+            <el-button  icon="el-icon-plus" circle @click="PEDialogVisible = true"></el-button>
+          </el-tooltip>
         </div>
         <el-card
           shadow="hover"
@@ -70,11 +73,10 @@
       </div>
     </div>
     <!-- Form -->
-    <!-- <el-button type="text" @click="userFormVisible = true">打开嵌套表单的 Dialog</el-button> -->
-
+    <!-- 用户信息设置的模态框 -->
     <el-dialog title="用户设置" :visible.sync="userFormVisible" width="35%">
       <el-form :model="form">
-        <el-form-item label="活动名称" :label-width="formLabelWidth">
+        <el-form-item label="用户名" :label-width="formLabelWidth">
           <el-input v-model="form.name" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="活动区域" :label-width="formLabelWidth">
@@ -87,6 +89,36 @@
       <div slot="footer" class="dialog-footer">
         <el-button @click="userFormVisible = false">取 消</el-button>
         <el-button type="primary" @click="userFormVisible = false">确 定</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 试卷编辑的模态框 -->
+    <el-dialog title="试卷信息" :visible.sync="PEDialogVisible" width="35%">
+      <el-form :model="newPaper" label-width="70px">
+        <el-form-item label="试卷名称">
+          <el-input v-model="newPaper.name" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="试卷难度">
+          <el-input-number
+            v-model="newPaper.level"
+            @change="handleChange"
+            :min="1"
+            :max="5"
+            label="难度"
+          ></el-input-number>
+        </el-form-item>
+        <el-form-item label="试卷总分">
+          <el-input v-model="newPaper.total" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="考试时间">
+          <el-input v-model="newPaper.timeLimit" autocomplete="off">
+            <template slot="append">分钟</template>
+          </el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <!-- <el-button @click="PEDialogVisible = false">PEDialogVisible = false取 消</el-button> -->
+        <el-button type="primary" @click="PEConfirm">确 定</el-button>
       </div>
     </el-dialog>
     <Footer class="footer"/>
@@ -102,6 +134,8 @@ export default {
   data() {
     return {
       userFormVisible: false,
+      // 新建试卷的模态框状态
+      PEDialogVisible: false,
       form: {
         name: "",
         region: "",
@@ -111,6 +145,17 @@ export default {
         type: [],
         resource: "",
         desc: ""
+      },
+      newPaper: {
+        id: "0",
+        name: "计算机二级网络考试",
+
+        level: "2",
+        total: "100",
+        score: "85",
+        date: "2018-07-25",
+        timeConsuming: "35",
+        timeLimit: "60"
       },
       formLabelWidth: "70px",
       texts: ["简单", "容易", "一般", "困难", "极难"],
@@ -166,7 +211,7 @@ export default {
           timeLimit: "60分钟"
         }
       ],
-      userInfo:{}
+      userInfo: {}
     };
   },
   computed: {
@@ -178,12 +223,29 @@ export default {
       this.$router.push("paper");
     },
     //修改用户信息
-    updateUser(){
-        this.userInfo=this.$store.getters.getUser;
-        console.log(this.userInfo.account)
-        this.userFormVisible = true;
+    updateUser() {
+      this.userInfo = this.$store.getters.getUser;
+      console.log(this.userInfo.account);
+      this.userFormVisible = true;
+    },
+    // 新建试卷确认
+    PEConfirm(){
+      this.PEDialogVisible=false;
+      // 向后台发送新建试卷请求
+
+      this.papers.push(this.newPaper);
+      this.newPaper={
+        id: "",
+        name: "",
+        level: "",
+        total: "",
+        score: "",
+        date: "2018-07-25",
+        timeConsuming: "",
+        timeLimit: ""
+      }
+
     }
-    
   },
   created() {
     if (!this.$store.state.user.name) {

@@ -97,7 +97,7 @@
           <el-input v-model="paper.name" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="试卷难度" >
-          <el-input-number v-model="paper.level" @change="handleChange" :min="1" :max="10" label="难度"></el-input-number>
+          <el-input-number v-model="paper.level" @change="handleChange" :min="1" :max="5" label="难度"></el-input-number>
         </el-form-item>
         <el-form-item label="试卷总分" >
           <el-input v-model="paper.total" autocomplete="off"></el-input>
