@@ -16,6 +16,9 @@ export default new Vuex.Store({
         },
         getIdentity(state){
             return state.isStu == true ? "学生" : "老师";
+        },
+        getIsStu(state){
+            return state.isStu;
         }
     },
 
@@ -54,6 +57,12 @@ export default new Vuex.Store({
                     }else {
                         let isStu=user.isStudent;
                         let User=data.body[0];
+
+                        //user附加的字段
+                        User.institution="软件工程";
+                        User.age="21";
+                        User.paperNum="8";
+
 
                         context.commit('isStu',isStu);
                         context.commit('login', User);

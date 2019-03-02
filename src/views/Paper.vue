@@ -12,9 +12,14 @@
           <span class="c-subtitle">限时：{{paper.timeLimit}}分钟</span>
           <span class="c-subtitle">难度：{{paper.level}}</span>
           <span class="c-subtitle">创建日期：{{paper.date}}</span>
-          <span class="c-subtitle">
+          <span class="c-subtitle" v-if="!getIsStu">
             <el-button type="primary" icon="el-icon-edit" round @click="PEDialogVisible = true">编辑试卷</el-button>
           </span>
+          <span class="c-subtitle" v-if="isCheck">
+            得分：
+            <span class="c-subtitle-score">{{paper.score}}</span>
+          </span>
+
         </h2>
         <div class="single-choice">
           <h3>一. 单项选择题：本大题共24小题，每小题1分，共24分。在每小题列出的备选项中 只有一项是最符合题目要求的，请将其选出</h3>
@@ -22,7 +27,8 @@
             <SingleChoice
               @question-edit="qusetioneEdit('single-choice',index)"
               @question-delete="questionDelete('single-choice',index)"
-              :isStu="false"
+              :isStu="getIsStu"
+              :isCheck="isCheck"
               :SC="item"
               :index="index"
               v-model="item.myAnswer"
@@ -37,13 +43,19 @@
               @question-delete="questionDelete('competition',index)"
               :competition="item"
               :index="index"
-              :isStu="false"
+              :isStu="getIsStu"
+              :isCheck="isCheck"
               :myAnswer.sync="item.myAnswer"
             ></Competition>
           </div>
         </div>
-        <div class="submit">
-          <el-button type="primary" style="width:150px">提交试卷</el-button>
+        <div class="submit" v-if="!isCheck">
+          <el-button
+            type="primary"
+            style="width:150px"
+            @click="submitPaper"
+            :loading="submitLoading"
+          >{{submitLoading==true?"提交中":"提交试卷"}}</el-button>
         </div>
       </template>
       <template slot="right">
@@ -52,7 +64,7 @@
         </div>-->
       </template>
     </Content>
-  
+
     <!-- 题目编辑的模态框 -->
     <el-dialog title="题目修改" :visible.sync="QEDialogVisible" width="35%">
       <el-form :label-position="right" label-width="70px" :model="focusQuestion">
@@ -87,7 +99,7 @@
             </el-input>
             <!-- <div>
               {{focusQuestion.myAnswer}}
-            </div> -->
+            </div>-->
           </el-form-item>
         </div>
       </el-form>
@@ -101,25 +113,36 @@
     <!-- 试卷编辑的模态框 -->
     <el-dialog title="试卷信息" :visible.sync="PEDialogVisible" width="35%">
       <el-form :model="paper" label-width="90px">
-        <el-form-item label="试卷名称" >
+        <el-form-item label="试卷名称">
           <el-input v-model="paper.name" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="试卷难度" >
-          <el-input-number v-model="paper.level" @change="handleChange" :min="1" :max="5" label="难度"></el-input-number>
+        <el-form-item label="试卷难度">
+          <el-input-number
+            v-model="paper.level"
+            @change="handleChange"
+            :min="1"
+            :max="5"
+            label="难度"
+          ></el-input-number>
         </el-form-item>
-        <el-form-item label="试卷总分" >
+        <el-form-item label="试卷总分">
           <el-input v-model="paper.total" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="考试时间" >
-          <el-input v-model="paper.timeLimit" autocomplete="off"><template slot="append">分</template></el-input>
+        <el-form-item label="考试时间">
+          <el-input v-model="paper.timeLimit" autocomplete="off">
+            <template slot="append">分</template>
+          </el-input>
         </el-form-item>
-        <el-form-item label="选择题分值" >
-          <el-input v-model="paper.scorePerSC" autocomplete="off"><template slot="append">分每题</template></el-input>
+        <el-form-item label="选择题分值">
+          <el-input v-model="paper.scorePerSC" autocomplete="off">
+            <template slot="append">分每题</template>
+          </el-input>
         </el-form-item>
-        <el-form-item label="填空题分值" >
-          <el-input v-model="paper.scorePerC" autocomplete="off"><template slot="append">分每空</template></el-input>
+        <el-form-item label="填空题分值">
+          <el-input v-model="paper.scorePerC" autocomplete="off">
+            <template slot="append">分每空</template>
+          </el-input>
         </el-form-item>
-        
       </el-form>
       <div slot="footer" class="dialog-footer">
         <!-- <el-button @click="PEDialogVisible = false">PEDialogVisible = false取 消</el-button> -->
@@ -141,16 +164,16 @@ export default {
   name: "paper",
   data() {
     return {
+      isCheck:false,
+      submitLoading: false,
       QEDialogVisible: false,
-      PEDialogVisible:false,
+      PEDialogVisible: false,
       time: 15,
       answer: {
         singleChoice: [],
         competition: []
       },
-      focusQuestion: {
-        
-      },
+      focusQuestion: {},
       paper: {
         id: "0",
         name: "软件工程开发考试",
@@ -161,29 +184,34 @@ export default {
         date: "2018-07-25",
         timeConsuming: "35",
         timeLimit: "60",
-        scorePerSC:5,
-        scorePerC:2,
+        scorePerSC: 5,
+        scorePerC: 2,
         singleChoice: [
           {
             id: "0",
             question:
               "在软件开发过程中，我们可以采用不同的过程模型，下列有关 增量模型描述正确的是（ ）",
             A: "是一种线性开发模型，具有不可回溯性",
-            B: "把待开发的软件系统模块化，将每个模块作为一个增量组件，从而分批次地分析、设计、编码和测试这些增量组件",
+            B:
+              "把待开发的软件系统模块化，将每个模块作为一个增量组件，从而分批次地分析、设计、编码和测试这些增量组件",
             C: "适用于已有产品或产品原型（样品），只需客户化的工程项目",
             D: "软件开发过程每迭代一次，软件开发又前进一个层次",
-            answer: "",
-            myAnswer:""
+            answer: "A",
+            myAnswer:"A"
           },
           {
             id: "1",
             question: "下面有关值类型和引用类型描述正确的是？（ ）",
-            A: "值类型的变量赋值只是进行数据复制，创建一个同值的新对象，而引用类型变量赋值，仅仅是把对象的引用的指针赋值给变量，使它们共用一个内存地址。",
-            B: "值类型数据是在栈上分配内存空间，它的变量直接包含变量的实例，使用效率相对较高。而引用类型数据是分配在堆上。",
-            C: "引用类型一般都具有继承性，但是值类型一般都是封装的，因此值类型不能作为其他任何类型的基类。",
-            D: "值类型变量的作用域主要是在栈上分配内存空间内，而引用类型变量作用域主要在分配的堆上。",
-            answer: "",
-            myAnswer:""
+            A:
+              "值类型的变量赋值只是进行数据复制，创建一个同值的新对象，而引用类型变量赋值，仅仅是把对象的引用的指针赋值给变量，使它们共用一个内存地址。",
+            B:
+              "值类型数据是在栈上分配内存空间，它的变量直接包含变量的实例，使用效率相对较高。而引用类型数据是分配在堆上。",
+            C:
+              "引用类型一般都具有继承性，但是值类型一般都是封装的，因此值类型不能作为其他任何类型的基类。",
+            D:
+              "值类型变量的作用域主要是在栈上分配内存空间内，而引用类型变量作用域主要在分配的堆上。",
+            answer: "A",
+            myAnswer: ""
           },
           {
             id: "2",
@@ -191,19 +219,21 @@ export default {
             A: "允许进程同时访问某些资源。",
             B: "允许进程强行从占有者那里夺取某些资源。",
             C: "进程在运行前一次性地向系统申请它所需要的全部资源。",
-            D: "把资源事先分类编号，按号分配，使进程在申请，占用资源时不会形成环路。",
-            answer: "",
-            myAnswer:""
+            D:
+              "把资源事先分类编号，按号分配，使进程在申请，占用资源时不会形成环路。",
+            answer: "A",
+            myAnswer: ""
           },
           {
             id: "3",
-            question: "以下为求0到1000以内所有奇数和的算法，从中选出描述正确的算法。（ ）",
+            question:
+              "以下为求0到1000以内所有奇数和的算法，从中选出描述正确的算法。（ ）",
             A: "①s=1；②i=1；③i=i+2；④s=s+i；⑤如果i≤1000，则返回③；⑥结束",
             B: "①s=0；②i=1；③i=i+2；④s=s+i；⑤如果i≤1000，则返回③；⑥结束",
             C: "①s=1；②i=1；③s=s+i；④i=i+2；⑤如果i≤1000，则返回③；⑥结束",
             D: "①s=1；②i=1；③i=i+2；④s=s+i；⑤如果i≤1000，则返回③；⑥结束",
-            answer: "",
-            myAnswer:""
+            answer: "A",
+            myAnswer: ""
           },
           {
             id: "4",
@@ -212,49 +242,52 @@ export default {
             B: "占用CPU的处理时间更多",
             C: "要消耗大量的内存空间，程序执行慢，甚至无法执行",
             D: "递归法比递推法的执行效率更高",
-            answer: "",
-            myAnswer:""
+            answer:"A",
+            myAnswer: ""
           },
           {
             id: "5",
-            question: "下面是一段关于计算变量s的算法： ①变量s的初值是0 ②变量i从1起循环到n，此时变量s的值由下面的式子表达式计算 ③s=s+(-1)*i ④输出变量s的值 这个计算s值的算法中，s的代数式表示是（ ）",
+            question:
+              "下面是一段关于计算变量s的算法： ①变量s的初值是0 ②变量i从1起循环到n，此时变量s的值由下面的式子表达式计算 ③s=s+(-1)*i ④输出变量s的值 这个计算s值的算法中，s的代数式表示是（ ）",
             A: "1-2+3-4+„+(-1)n*(n-1)",
             B: "1-2+3-4+„+(-1)n-1*n",
             C: "1+2+3+4+...+(n-1)+n",
             D: "-1-2-3-4-...-n",
-            answer: "",
-            myAnswer:""
+            answer:"A",
+            myAnswer: ""
           }
-
         ],
         competition: [
           {
             question:
               "计算机网络由负责信息处理的资源子网和负贵信息传递的_______组成。",
             answer: ["接收方窗口"],
-            myAnswer:[" "]
+            myAnswer: ["接收方窗口"]
           },
           {
             question:
               "计算机网络的功能主要表现在硬件、软件资源的共享以及用户间______ 三个方面。",
             answer: ["接收方窗口"],
-            myAnswer:[" "]
+            myAnswer: [""]
           },
           {
             question:
               ".按照网络采用的传输技术可将计算机网络分为广播式网络和_________网络，还有_________等事情，软件资源的共享以及用户间______ 三个方面。",
-            answer: ["接收方窗口","sad", "ASD"],
-            myAnswer:[" "," "," "]
+            answer: ["接收方窗口", "sad", "ASD"],
+            myAnswer: ["", "", ""]
           },
           {
             question:
               ".网络体系结构是计算机网络各层次结构模型及其_____的集合。",
             answer: ["接收方窗口"],
-            myAnswer:[" "]
+            myAnswer: [""]
           }
         ]
       }
     };
+  },
+  computed: {
+    ...mapGetters(["getIsStu"])
   },
   methods: {
     ...mapMutations(["init"]),
@@ -329,10 +362,75 @@ export default {
       //TODO  发送修改题目的请求
     },
     //试卷编辑后确认
-    PEConfirm(){
-      let that=this;
+    PEConfirm() {
+      let that = this;
       // 将试卷编辑结果发个后台
-      that.PEDialogVisible = false
+      that.PEDialogVisible = false;
+    },
+    // 提交试卷
+    submitPaper() {
+      let that=this;
+      that.submitLoading = true;
+      let paper = that.paper;
+      let singleChoice = paper.singleChoice;
+      let competition = paper.competition;
+      console.log(singleChoice);
+      let SCScore = singleChoice.reduce((total, current, index, arr) => {
+        return (
+          total + (current.answer == current.myAnswer ? paper.scorePerSC : 0)
+        );
+      }, 0);
+      let CScore = competition.reduce((total, current, index, arr) => {
+        for (let i = 0; i < current.answer.length; i++) {
+          if (current.answer[i] == current.myAnswer[i]) {
+            total += paper.scorePerC;
+          }
+          return total;
+        }
+      }, 0);
+      // h是用于js创建页面元素的Element中的函数
+      const h = that.$createElement;
+      //模拟交卷过程
+      setTimeout(() => {
+        this.$msgbox({
+        title: "成绩报告 ：",
+        message: h("p", null, [
+          h("div",null,"选择题得分："+SCScore),
+          h("div",null,"填空题得分："+CScore),
+          h("div",null,"总得分："+(SCScore+CScore)),
+          
+          // h("i", { style: "color: teal" }, "VNode")
+        ]),
+        showCancelButton: true,
+        confirmButtonText: "查看答卷",
+        cancelButtonText: "回到主页",
+        beforeClose: (action, instance, done) => {
+          if (action === "confirm") {
+            // 查看试卷
+            this.isCheck=true;
+            window.scroll(0, 0);
+            done();
+          } else {
+            // 回到主页
+            this.$router.push({ name: "user" });
+            done();
+            
+          }
+          that.submitLoading=false;
+        }
+      }).then(action => {
+        // 模态框关闭之后的操作
+
+        // this.$message({
+        //   type: "info",
+        //   message: "action: " + action
+        // });
+      });
+      }, 500);
+      
+
+      console.log(SCScore);
+      console.log(CScore);
     }
   },
   created() {
@@ -374,5 +472,10 @@ export default {
   font-size: 14px;
   font-weight: normal;
   margin-left: 40px;
+}
+.c-subtitle-score{
+  font-size: 40px;
+  color: #009688;
+  font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif
 }
 </style>

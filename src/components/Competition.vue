@@ -4,9 +4,12 @@
     <div class="c-answer">
       <div class="c-a-item" v-for="(item,answerIndex) in competition.answer" :key="answerIndex">
         <div class="c-a-index">{{'（'+(answerIndex+1)+'）'}}</div>
-        <div class="c-a-input">
+        <span class="c-a-input">
           <input type="text" v-model="myAnswer[answerIndex]" @input="handleInput">
-        </div>
+        </span>
+        <span :class="[myAnswer[answerIndex]==item?'correct':'wrong']" v-if="isCheck">
+          {{"正确答案："+competition.answer[answerIndex]}}
+        </span>
       </div>
     </div>
     <div class="s-c-action" v-if="!isStu">
@@ -28,7 +31,8 @@ export default {
     competition: Object,
     index: Number,
     isStu: Boolean,
-    myAnswer: Array
+    myAnswer: Array,
+    isCheck:Boolean
   },
   methods: {
     handleInput(event) {
@@ -43,6 +47,12 @@ export default {
 </script>
 
 <style scoped>
+.correct{
+  color: #009688;
+}
+.wrong{
+  color: red;
+}
 .c-competition {
   padding: 8px 10px;
 }
@@ -57,6 +67,7 @@ export default {
 .c-a-input {
   display: inline-block;
   width: 200px;
+  margin: 4px 40px 4px 0;
 }
 input {
   border-top: none;
@@ -64,7 +75,7 @@ input {
   border-right: none;
   border-bottom: 1px solid #ddd;
   font-size: 16px;
-  color: #009688;
+  color: #409EFF;
 
   padding: 4px;
 }

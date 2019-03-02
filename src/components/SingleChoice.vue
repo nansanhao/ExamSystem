@@ -3,12 +3,15 @@
     <div class="s-c-wrap">
       <div class="s-c-question">{{index+1+" . "+SC.question}}</div>
       <div class="s-c-answer">
-        <el-radio-group v-model="myAnswer" @change="handleChange">
+        <el-radio-group v-model="myAnswer"  @change="handleChange">
           <el-radio class="radio" label="A">{{SC.A}}</el-radio>
           <el-radio class="radio" label="B">{{SC.B}}</el-radio>
           <el-radio class="radio" label="C">{{SC.C}}</el-radio>
           <el-radio class="radio" label="D">{{SC.D}}</el-radio>
         </el-radio-group>
+      </div>
+      <div :class="['s-c-answer', SC.myAnswer==SC.answer?'correct':'wrong']" v-if="isCheck">
+        {{"正确答案："+SC.answer}}
       </div>
     </div>
     <div class="s-c-action" v-if="!isStu">
@@ -27,9 +30,11 @@ export default {
     };
   },
   props: {
+    value:String,
     isStu:Boolean,
     index: Number,
-    SC: Object
+    SC: Object,
+    isCheck:Boolean
   },
   methods:{
     handleChange(value){
@@ -49,7 +54,12 @@ export default {
 .s-c-answer {
   margin-top: 4px;
   margin-left: 10px;
-  
+}
+.correct{
+  color: #009688;
+}
+.wrong{
+  color: red;
 }
 
 .radio {

@@ -51,7 +51,7 @@
         >
           <div>
             <div class="r-info-1">
-              <div class="r-i-name">{{item.name}}</div>
+              <div :class="[item.timeConsuming==''?'':'r-i-finish','r-i-name']">{{item.name}}</div>
               <div class="r-i-level">
                 <el-rate v-model="item.level" :texts="texts" disabled show-text></el-rate>
               </div>
@@ -60,12 +60,12 @@
             <div class="r-info-2">
               <div class="r-i-time">
                 <div class="r-i-timelimit">限时：{{item.timeLimit}}</div>
-                <div class="r-i-timeconsuming">耗时：{{item.timeConsuming}}</div>
+                <div class="r-i-timeconsuming">耗时：{{item.timeConsuming==""?"未完成":item.timeConsuming}}</div>
               </div>
               <div class="r-i-score">
                 <div class="r-i-totalscore">总分：{{item.total}}</div>
                 <div class="r-i-totalscore">得分：</div>
-                <div class="r-i-userscore">{{item.score}}</div>
+                <div :class="[item.score==''?'':'r-i-finish','r-i-userscore']">{{item.score==""?"无":item.score}}</div>
               </div>
             </div>
           </div>
@@ -75,19 +75,27 @@
     <!-- Form -->
     <!-- 用户信息设置的模态框 -->
     <el-dialog title="用户设置" :visible.sync="userFormVisible" width="35%">
-      <el-form :model="form">
+      <el-form :model="getUser">
         <el-form-item label="用户名" :label-width="formLabelWidth">
-          <el-input v-model="form.name" autocomplete="off"></el-input>
+          <el-input v-model="getUser.name" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="活动区域" :label-width="formLabelWidth">
-          <el-select v-model="form.region" placeholder="请选择活动区域">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
+        <el-form-item label="院系" :label-width="formLabelWidth">
+          <el-input v-model="getUser.institution" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="年龄" :label-width="formLabelWidth">
+          <el-input v-model="getUser.age" autocomplete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="所属板块" :label-width="formLabelWidth">
+          <el-select v-model="form.region" placeholder="请选择所属板块">
+            <el-option label="英语四六级" value="shanghai"></el-option>
+            <el-option label="计算机二级" value="beijing"></el-option>
+            <el-option label="软件工程" value="beijing"></el-option>
           </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="userFormVisible = false">取 消</el-button>
+        <!-- <el-button @click="userFormVisible = false">取 消</el-button> -->
         <el-button type="primary" @click="userFormVisible = false">确 定</el-button>
       </div>
     </el-dialog>
@@ -147,15 +155,13 @@ export default {
         desc: ""
       },
       newPaper: {
-        id: "0",
-        name: "计算机二级网络考试",
-
-        level: "2",
-        total: "100",
-        score: "85",
-        date: "2018-07-25",
-        timeConsuming: "35",
-        timeLimit: "60"
+        name: "",
+        level: "",
+        total: "",
+        score: "",
+        date: "2019-03-02",
+        timeConsuming: "",
+        timeLimit: ""
       },
       formLabelWidth: "70px",
       texts: ["简单", "容易", "一般", "困难", "极难"],
@@ -220,6 +226,7 @@ export default {
   methods: {
     ...mapMutations(["init"]),
     GetPaper(index) {
+      //点击跳转到paper页面
       this.$router.push("paper");
     },
     //修改用户信息
@@ -232,8 +239,9 @@ export default {
     PEConfirm(){
       this.PEDialogVisible=false;
       // 向后台发送新建试卷请求
-
-      this.papers.push(this.newPaper);
+      let newPaper=this.newPaper;
+      newPaper.id=this.papers.length;
+      this.papers.push(newPaper);
       this.newPaper={
         id: "",
         name: "",
@@ -376,8 +384,11 @@ export default {
 
 .r-i-name {
   font-size: 18px;
-  color: #009688;
+  color: rgb(255, 208, 75);
   font-weight: bold;
+}
+.r-i-finish{
+  color: #009688!important;
 }
 
 .r-i-level {
@@ -410,8 +421,8 @@ export default {
 }
 
 .r-i-userscore {
-  color: #009688;
   font-size: 40px;
+  color: rgb(255, 208, 75);
 }
 
 .footer {
