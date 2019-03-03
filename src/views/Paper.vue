@@ -19,7 +19,6 @@
             得分：
             <span class="c-subtitle-score">{{paper.score}}</span>
           </span>
-
         </h2>
         <div class="single-choice">
           <h3>一. 单项选择题：本大题共24小题，每小题1分，共24分。在每小题列出的备选项中 只有一项是最符合题目要求的，请将其选出</h3>
@@ -27,6 +26,7 @@
             <SingleChoice
               @question-edit="qusetioneEdit('single-choice',index)"
               @question-delete="questionDelete('single-choice',index)"
+              @question-add="questionAdd('single-choice',index)"
               :isStu="getIsStu"
               :isCheck="isCheck"
               :SC="item"
@@ -41,6 +41,7 @@
             <Competition
               @question-edit="qusetioneEdit('competition',index)"
               @question-delete="questionDelete('competition',index)"
+              @question-add="questionAdd('competition',index)"
               :competition="item"
               :index="index"
               :isStu="getIsStu"
@@ -55,7 +56,7 @@
             style="width:150px"
             @click="submitPaper"
             :loading="submitLoading"
-          >{{submitLoading==true?"提交中":"提交试卷"}}</el-button>
+          >{{submitContent}}</el-button>
         </div>
       </template>
       <template slot="right">
@@ -85,7 +86,7 @@
             <el-input v-model="focusQuestion.D"></el-input>
           </el-form-item>
           <el-form-item label="答案">
-            <el-input v-model="focusQuestion.myAnswer"></el-input>
+            <el-input v-model="focusQuestion.answer"></el-input>
           </el-form-item>
         </div>
         <div class="focus-question-c" v-else-if="focusQuestion.type=='competition'">
@@ -106,7 +107,7 @@
       <div slot="footer" class="dialog-footer">
         <el-button v-if="!focusQuestion.A" @click="addAnswer">添加答案</el-button>
         <el-button @click="QEDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="editConfirm">确 定</el-button>
+        <el-button type="primary" @click="editConfirm()">确 定</el-button>
       </div>
     </el-dialog>
     <!-- <el-button type="text" @click="PEDialogVisible = true">打开嵌套表单的 Dialog</el-button> -->
@@ -159,12 +160,12 @@ import Footer from "../components/Footer";
 import Content from "../components/Content";
 import SingleChoice from "../components/SingleChoice";
 import Competition from "../components/Competition";
-import { mapGetters, mapActions, mapMutations } from "vuex";
+import { mapState, mapGetters, mapActions, mapMutations } from "vuex";
 export default {
   name: "paper",
   data() {
     return {
-      isCheck:false,
+      isCheck: false,
       submitLoading: false,
       QEDialogVisible: false,
       PEDialogVisible: false,
@@ -174,19 +175,35 @@ export default {
         competition: []
       },
       focusQuestion: {},
-      paper:{}
+      paper: {}
     };
   },
   computed: {
-    ...mapGetters(["getIsStu","getPaperByIndex"])
+    ...mapState(["papers"]),
+    ...mapGetters(["getIsStu", "getPaperByIndex"]),
+    submitContent() {
+      if (this.$store.getters.getIsStu == false) {
+        return "保存修改";
+      } else {
+        return this.submitLoading == true ? "提交中" : "提交试卷";
+      }
+    }
   },
   methods: {
-    ...mapMutations(["init","submitPaperScore"]),
+    ...mapMutations([
+      "init",
+      "submitPaperScore",
+      "changePaper",
+      "deletePaperQuestion",
+      "addPaperQuestion"
+    ]),
     addAnswer() {
       this.focusQuestion.answer.push("");
+      this.focusQuestion.myAnswer.push("");
     },
     removeAnswer(index) {
       this.focusQuestion.answer.splice(index, 1);
+      this.focusQuestion.myAnswer.splice(index, 1);
     },
     // 问题编辑
     qusetioneEdit(type, index) {
@@ -220,7 +237,11 @@ export default {
       })
         .then(() => {
           //TODO 删除问题操作
-
+          this.deletePaperQuestion({
+            questionIndex: index,
+            type,
+            paperIndex: this.$route.query.index
+          });
           this.$notify.success({
             title: "成功",
             message: "删除成功！"
@@ -233,13 +254,53 @@ export default {
           });
         });
     },
+    questionAdd(type, index) {
+      console.log("问题增加");
+      if(type=="single-choice"){
+        this.focusQuestion={
+          isNew:true,
+          type,
+          index,
+          question:"",
+          answer:"",
+          myAnswer:"",
+          A:"",
+          B:"",
+          C:""
+        };
+      }else if(type == "competition"){
+          this.focusQuestion={
+            isNew:true,
+            type,
+            index,
+            question:"",
+            answer:[""],
+            myAnswer:[""]
+          }
+      }
+      this.QEDialogVisible=true;
+      
+    },
     // 问题编辑后确认
     editConfirm() {
       let focusQuestion = this.focusQuestion;
-      let { type, index } = focusQuestion;
+      let { type, index,isNew} = focusQuestion;
       delete focusQuestion.type;
       delete focusQuestion.index;
+      delete focusQuestion.isNew;
 
+      if(isNew){
+        // 增加
+        this.addPaperQuestion({
+            questionIndex: index,
+            type,
+            paperIndex: this.$route.query.index,
+            question:focusQuestion
+          });
+          this.QEDialogVisible=false;
+        return;
+      }
+      
       if (type == "single-choice") {
         this.paper.singleChoice[index] = focusQuestion;
         //关闭 修改问题模态框
@@ -249,7 +310,7 @@ export default {
         //关闭 修改问题模态框
         this.QEDialogVisible = false;
       }
-
+      this.focusQuestion={};
       //TODO  发送修改题目的请求
     },
     //试卷编辑后确认
@@ -260,7 +321,36 @@ export default {
     },
     // 提交试卷
     submitPaper() {
-      let that=this;
+      let that = this;
+      // 老师
+      if (!this.$store.getters.getIsStu) {
+        this.$confirm("此操作将修改该试卷, 是否继续?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        })
+          .then(() => {
+            this.changePaper({
+              paper: this.paper,
+              paperIndex: this.$route.query.index
+            });
+            this.$notify({
+              title: "成功",
+              message: "试卷修改成功!",
+              type: "success"
+            });
+          })
+          .catch(() => {
+            this.$notify.info({
+              title: "消息",
+              message: "已经取消修改该试卷！"
+            });
+          });
+
+        return;
+      }
+
+      // 学生
       that.submitLoading = true;
       let paper = that.paper;
       let singleChoice = paper.singleChoice;
@@ -280,73 +370,74 @@ export default {
         }
       }, 0);
       // 提交分数
-      this.submitPaperScore({score:CScore+SCScore,paperIndex:this.$route.query.index});
+      this.submitPaperScore({
+        score: CScore + SCScore,
+        paperIndex: this.$route.query.index
+      });
 
       // h是用于js创建页面元素的Element中的函数
       const h = that.$createElement;
       //模拟交卷过程
       setTimeout(() => {
         this.$msgbox({
-        title: "成绩报告 ：",
-        message: h("p", null, [
-          h("div",null,"选择题得分："+SCScore),
-          h("div",null,"填空题得分："+CScore),
-          h("div",null,"总得分："+(SCScore+CScore)),
-          
-          // h("i", { style: "color: teal" }, "VNode")
-        ]),
-        showCancelButton: true,
-        confirmButtonText: "查看答卷",
-        cancelButtonText: "回到主页",
-        beforeClose: (action, instance, done) => {
-          if (action === "confirm") {
-            // 查看试卷
-            this.isCheck=true;
-            window.scroll(0, 0);
-            done();
-          } else {
-            // 回到主页
-            this.$router.push({ name: "user" });
-            done();
-            
-          }
-          that.submitLoading=false;
-        }
-      }).then(action => {
-        // 模态框关闭之后的操作
+          title: "成绩报告 ：",
+          message: h("p", null, [
+            h("div", null, "选择题得分：" + SCScore),
+            h("div", null, "填空题得分：" + CScore),
+            h("div", null, "总得分：" + (SCScore + CScore))
 
-        // this.$message({
-        //   type: "info",
-        //   message: "action: " + action
-        // });
-      });
+            // h("i", { style: "color: teal" }, "VNode")
+          ]),
+          showCancelButton: true,
+          confirmButtonText: "查看答卷",
+          cancelButtonText: "回到主页",
+          beforeClose: (action, instance, done) => {
+            if (action === "confirm") {
+              // 查看试卷
+              this.isCheck = true;
+              window.scroll(0, 0);
+              done();
+            } else {
+              // 回到主页
+              this.$router.push({ name: "user" });
+              done();
+            }
+            that.submitLoading = false;
+          }
+        }).then(action => {
+          // 模态框关闭之后的操作
+          // this.$message({
+          //   type: "info",
+          //   message: "action: " + action
+          // });
+        });
       }, 500);
-      
 
       console.log(SCScore);
       console.log(CScore);
     }
   },
   created() {
-    
     if (!this.$store.state.user.name) {
       if (sessionStorage.getItem("ES_User")) {
         this.init("reload");
-        this.paper=this.$store.getters.getPaperByIndex(this.$route.query.index);
-        console.log("huifu")
+        this.paper = this.$store.getters.getPaperByIndex(
+          this.$route.query.index
+        );
+        console.log("huifu");
         console.log(this);
       } else {
         console.log("无登陆状态，返回主页");
         //this.$router.push({name: 'home'});
       }
-    }else{
-      this.paper=this.$store.getters.getPaperByIndex(this.$route.query.index);
+    } else {
+      this.paper = this.$store.getters.getPaperByIndex(this.$route.query.index);
     }
     window.scroll(0, 0);
 
     // 判断是否做过此卷子
-    if(this.paper.score!=""){
-      this.isCheck=true;
+    if (this.paper.score != "" && this.$store.getters.getIsStu == true) {
+      this.isCheck = true;
     }
   },
   components: {
@@ -379,9 +470,9 @@ export default {
   font-weight: normal;
   margin-left: 40px;
 }
-.c-subtitle-score{
+.c-subtitle-score {
   font-size: 40px;
   color: #009688;
-  font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
 }
 </style>

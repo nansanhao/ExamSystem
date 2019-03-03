@@ -15,6 +15,7 @@
     <div class="s-c-action" v-if="!isStu">
       <el-button type="primary" icon="el-icon-edit" v-on:click="$emit('question-edit')" circle></el-button>
       <el-button type="danger" icon="el-icon-delete" v-on:click="$emit('question-delete')" circle></el-button>
+      <el-button type="info" icon="el-icon-plus" v-on:click="$emit('question-add')" circle></el-button>
     </div>
   </div>
 </template>

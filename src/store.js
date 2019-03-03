@@ -73,6 +73,31 @@ export default new Vuex.Store({
           state.papers[arg.paperIndex].score=arg.score;
           state.papers[arg.paperIndex].timeConsuming="35"; 
           localStorage.setItem("ES_papers",JSON.stringify(state.papers));
+        },
+        addPaper(state,newpaper){
+            state.papers.unshift(newpaper);
+            localStorage.setItem("ES_papers",JSON.stringify(state.papers));  
+        },
+        changePaper(state,arg){
+          state.papers[arg.paperIndex]=arg.paper;
+          localStorage.setItem("ES_papers",JSON.stringify(state.papers));
+          
+        },
+        deletePaperQuestion(state,arg){
+          if(arg.type=="single-choice"){
+            state.papers[arg.paperIndex].singleChoice.splice(arg.questionIndex,1)
+          }else if(arg.type=="competition"){
+            state.papers[arg.paperIndex].competition.splice(arg.questionIndex,1)
+          }   
+          // localStorage.setItem("ES_papers",JSON.stringify(state.papers));       
+        },
+        addPaperQuestion(state,arg){
+          if(arg.type=="single-choice"){
+            state.papers[arg.paperIndex].singleChoice.splice(arg.questionIndex,0,arg.question)
+          }else if(arg.type=="competition"){
+            state.papers[arg.paperIndex].competition.splice(arg.questionIndex,0,arg.question)
+          }
+          // localStorage.setItem("ES_papers",JSON.stringify(state.papers));
         }
         
 

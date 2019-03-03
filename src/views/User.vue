@@ -165,7 +165,26 @@ export default {
         score: "",
         date: "2019-03-02",
         timeConsuming: "",
-        timeLimit: ""
+        timeLimit: "",
+        competition: [
+          {
+            question:
+              "这是一道示例题目，这里填入答案_______。",
+            answer: ["示例答案"],
+            myAnswer: [""]
+          }
+        ],
+        singleChoice: [
+          {
+            question: "这是一道示例题目，下列有关 增量模型描述正确的是（ ）",
+            A: "这是一个A选项",
+            B: "这是一个B选项",
+            C: "这是一个C选项",
+            D: "这是一个D选项",
+            answer: "A",
+            myAnswer: ""
+          }
+        ]
       },
       formLabelWidth: "70px",
       texts: ["简单", "容易", "一般", "困难", "极难"],
@@ -174,13 +193,13 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["getIdentity", "getUser","getBriefPapers"])
+    ...mapGetters(["getIdentity", "getUser", "getBriefPapers"])
   },
   methods: {
-    ...mapMutations(["init"]),
+    ...mapMutations(["init","addPaper"]),
     GetPaper(index) {
       //点击跳转到paper页面
-      this.$router.push({path:"paper",query: { index }});
+      this.$router.push({ path: "paper", query: { index } });
     },
     //修改用户信息
     updateUser() {
@@ -192,18 +211,35 @@ export default {
     PEConfirm() {
       this.PEDialogVisible = false;
       // 向后台发送新建试卷请求
-      let newPaper = this.newPaper;
-      newPaper.id = this.papers.length;
-      this.papers.push(newPaper);
+      this.addPaper(this.newPaper);
+      
       this.newPaper = {
-        id: "",
         name: "",
         level: "",
         total: "",
         score: "",
-        date: "2018-07-25",
+        date: "2019-03-02",
         timeConsuming: "",
-        timeLimit: ""
+        timeLimit: "",
+        competition: [
+          {
+            question:
+              "这是一道示例题目，这里填入答案_______。",
+            answer: ["示例答案"],
+            myAnswer: [""]
+          }
+        ],
+        singleChoice: [
+          {
+            question: "这是一道示例题目，下列有关 增量模型描述正确的是（ ）",
+            A: "这是一个A选项",
+            B: "这是一个B选项",
+            C: "这是一个C选项",
+            D: "这是一个D选项",
+            answer: "A",
+            myAnswer: ""
+          }
+        ]
       };
     }
   },
