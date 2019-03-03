@@ -38,14 +38,14 @@
         <div class="r-title">
           <i class="el-icon-edit"></i>&nbsp;&nbsp;做题记录&nbsp;&nbsp;
           <el-tooltip class="item" effect="dark" content="新建试卷" placement="top-start">
-            <el-button  icon="el-icon-plus" circle @click="PEDialogVisible = true"></el-button>
+            <el-button icon="el-icon-plus" circle @click="PEDialogVisible = true"></el-button>
           </el-tooltip>
         </div>
         <el-card
           shadow="hover"
           body-style="padding:20px;;"
           class="r-item"
-          v-for="(item,index) in papers"
+          v-for="(item,index) in getBriefPapers"
           :key="index"
           @click.native="GetPaper(index)"
         >
@@ -59,13 +59,17 @@
             </div>
             <div class="r-info-2">
               <div class="r-i-time">
-                <div class="r-i-timelimit">限时：{{item.timeLimit}}</div>
-                <div class="r-i-timeconsuming">耗时：{{item.timeConsuming==""?"未完成":item.timeConsuming}}</div>
+                <div class="r-i-timelimit">限时：{{item.timeLimit}}分钟</div>
+                <div
+                  class="r-i-timeconsuming"
+                >耗时：{{item.timeConsuming==""?"未完成":item.timeConsuming+"分钟"}}</div>
               </div>
               <div class="r-i-score">
                 <div class="r-i-totalscore">总分：{{item.total}}</div>
                 <div class="r-i-totalscore">得分：</div>
-                <div :class="[item.score==''?'':'r-i-finish','r-i-userscore']">{{item.score==""?"无":item.score}}</div>
+                <div
+                  :class="[item.score==''?'':'r-i-finish','r-i-userscore']"
+                >{{item.score==""?"无":item.score}}</div>
               </div>
             </div>
           </div>
@@ -165,69 +169,18 @@ export default {
       },
       formLabelWidth: "70px",
       texts: ["简单", "容易", "一般", "困难", "极难"],
-      papers: [
-        {
-          id: 1,
-          name: "全国大学生计算机考试",
-          level: "2",
-          total: "100",
-          score: "85",
-          date: "2018-07-25",
-          timeConsuming: "35分钟",
-          timeLimit: "60分钟"
-        },
-        {
-          id: 1,
-          name: "专业英语四级考试",
-          level: "4",
-          total: "100",
-          score: "55",
-          date: "2018-07-25",
-          timeConsuming: "35分钟",
-          timeLimit: "60分钟"
-        },
-        {
-          id: 1,
-          name: "专业英语四级考试",
-          level: "4",
-          total: "100",
-          score: "55",
-          date: "2018-07-25",
-          timeConsuming: "35分钟",
-          timeLimit: "60分钟"
-        },
-        {
-          id: 1,
-          name: "专业英语四级考试",
-          level: "4",
-          total: "100",
-          score: "55",
-          date: "2018-07-25",
-          timeConsuming: "35分钟",
-          timeLimit: "60分钟"
-        },
-        {
-          id: 1,
-          name: "专业英语四级考试",
-          level: "4",
-          total: "100",
-          score: "55",
-          date: "2018-07-25",
-          timeConsuming: "35分钟",
-          timeLimit: "60分钟"
-        }
-      ],
+      // papers: [],
       userInfo: {}
     };
   },
   computed: {
-    ...mapGetters(["getIdentity", "getUser"])
+    ...mapGetters(["getIdentity", "getUser","getBriefPapers"])
   },
   methods: {
     ...mapMutations(["init"]),
     GetPaper(index) {
       //点击跳转到paper页面
-      this.$router.push("paper");
+      this.$router.push({path:"paper",query: { index }});
     },
     //修改用户信息
     updateUser() {
@@ -236,13 +189,13 @@ export default {
       this.userFormVisible = true;
     },
     // 新建试卷确认
-    PEConfirm(){
-      this.PEDialogVisible=false;
+    PEConfirm() {
+      this.PEDialogVisible = false;
       // 向后台发送新建试卷请求
-      let newPaper=this.newPaper;
-      newPaper.id=this.papers.length;
+      let newPaper = this.newPaper;
+      newPaper.id = this.papers.length;
       this.papers.push(newPaper);
-      this.newPaper={
+      this.newPaper = {
         id: "",
         name: "",
         level: "",
@@ -251,8 +204,7 @@ export default {
         date: "2018-07-25",
         timeConsuming: "",
         timeLimit: ""
-      }
-
+      };
     }
   },
   created() {
@@ -387,8 +339,8 @@ export default {
   color: rgb(255, 208, 75);
   font-weight: bold;
 }
-.r-i-finish{
-  color: #009688!important;
+.r-i-finish {
+  color: #009688 !important;
 }
 
 .r-i-level {
