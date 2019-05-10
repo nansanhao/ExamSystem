@@ -19,6 +19,7 @@
             得分：
             <span class="c-subtitle-score">{{paper.score}}</span>
           </span>
+          <span class="c-subtitle" v-if="!isCheck&&getIsStu">{{getTime}}</span>
         </h2>
         <div class="single-choice">
           <h3>一. 单项选择题：本大题共24小题，每小题1分，共24分。在每小题列出的备选项中 只有一项是最符合题目要求的，请将其选出</h3>
@@ -165,6 +166,8 @@ export default {
   name: "paper",
   data() {
     return {
+      secondlimit: 0,
+      interval: null,
       isCheck: false,
       submitLoading: false,
       QEDialogVisible: false,
@@ -187,6 +190,16 @@ export default {
       } else {
         return this.submitLoading == true ? "提交中" : "提交试卷";
       }
+    },
+    getTime() {
+      let msec = this.secondlimit;
+      let hr = parseInt((msec / 60 / 60) % 24);
+      let min = parseInt((msec / 60) % 60);
+      let sec = parseInt(msec % 60);
+      hr = hr > 9 ? hr : "0" + hr;
+      min = min > 9 ? min : "0" + min;
+      sec = sec > 9 ? sec : "0" + sec;
+      return "剩余时间：" + hr + "时" + min + "分" + sec + "秒";
     }
   },
   methods: {
@@ -256,51 +269,50 @@ export default {
     },
     questionAdd(type, index) {
       console.log("问题增加");
-      if(type=="single-choice"){
-        this.focusQuestion={
-          isNew:true,
+      if (type == "single-choice") {
+        this.focusQuestion = {
+          isNew: true,
           type,
           index,
-          question:"",
-          answer:"",
-          myAnswer:"",
-          A:"",
-          B:"",
-          C:""
+          question: "",
+          answer: "",
+          myAnswer: "",
+          A: "",
+          B: "",
+          C: ""
         };
-      }else if(type == "competition"){
-          this.focusQuestion={
-            isNew:true,
-            type,
-            index,
-            question:"",
-            answer:[""],
-            myAnswer:[""]
-          }
+      } else if (type == "competition") {
+        this.focusQuestion = {
+          isNew: true,
+          type,
+          index,
+          question: "",
+          answer: [""],
+          myAnswer: [""]
+        };
       }
-      this.QEDialogVisible=true;
-      
+      this.QEDialogVisible = true;
     },
     // 问题编辑后确认
     editConfirm() {
       let focusQuestion = this.focusQuestion;
-      let { type, index,isNew} = focusQuestion;
+      let { type, index, isNew } = focusQuestion;
       delete focusQuestion.type;
       delete focusQuestion.index;
       delete focusQuestion.isNew;
 
-      if(isNew){
+      if (isNew) {
         // 增加
         this.addPaperQuestion({
-            questionIndex: index,
-            type,
-            paperIndex: this.$route.query.index,
-            question:focusQuestion
-          });
-          this.QEDialogVisible=false;
+          questionIndex: index,
+          type,
+          paperIndex: this.$route.query.index,
+          question: focusQuestion
+        });
+        this.QEDialogVisible = false;
         return;
       }
-      
+
       if (type == "single-choice") {
         this.paper.singleChoice[index] = focusQuestion;
         //关闭 修改问题模态框
@@ -310,7 +322,7 @@ export default {
         //关闭 修改问题模态框
         this.QEDialogVisible = false;
       }
-      this.focusQuestion={};
+      this.focusQuestion = {};
       //TODO  发送修改题目的请求
     },
     //试卷编辑后确认
@@ -351,17 +363,29 @@ export default {
       }
 
       // 学生
+      let loading = null;
+      if (this.secondlimit == 0) {
+        loading = this.$loading({
+          lock: true,
+          text: "时间到，正在交卷...",
+          spinner: "el-icon-loading",
+          background: "rgba(255, 255, 255, 0.7)"
+        });
+      } else {
+        clearInterval(this.interval);
+      }
+
       that.submitLoading = true;
       let paper = that.paper;
       let singleChoice = paper.singleChoice;
       let competition = paper.competition;
       console.log(singleChoice);
-      let SCScore = singleChoice.reduce((total, current, index, arr) => {
+      let SCScore = singleChoice.reduce((total = 0, current, index, arr) => {
         return (
           total + (current.answer == current.myAnswer ? paper.scorePerSC : 0)
         );
       }, 0);
-      let CScore = competition.reduce((total, current, index, arr) => {
+      let CScore = competition.reduce((total = 0, current, index, arr) => {
         for (let i = 0; i < current.answer.length; i++) {
           if (current.answer[i] == current.myAnswer[i]) {
             total += paper.scorePerC;
@@ -370,15 +394,24 @@ export default {
         }
       }, 0);
       // 提交分数
+    
+      console.log(SCScore)
       this.submitPaperScore({
         score: CScore + SCScore,
+        timeConsuming: Math.ceil(
+          (this.paper.timeLimit * 60 - this.secondlimit) / 60
+        ),
         paperIndex: this.$route.query.index
       });
 
       // h是用于js创建页面元素的Element中的函数
       const h = that.$createElement;
       //模拟交卷过程
+
       setTimeout(() => {
+        if (loading) {
+          loading.close();
+        }
         this.$msgbox({
           title: "成绩报告 ：",
           message: h("p", null, [
@@ -424,8 +457,8 @@ export default {
         this.paper = this.$store.getters.getPaperByIndex(
           this.$route.query.index
         );
-        console.log("huifu");
-        console.log(this);
+        // console.log("huifu");
+        // console.log(this);
       } else {
         console.log("无登陆状态，返回主页");
         //this.$router.push({name: 'home'});
@@ -436,8 +469,22 @@ export default {
     window.scroll(0, 0);
 
     // 判断是否做过此卷子
-    if (this.paper.score != "" && this.$store.getters.getIsStu == true) {
+    if (this.paper.score !== "" && this.$store.getters.getIsStu == true) {
       this.isCheck = true;
+    } else {
+      if (this.$store.getters.getIsStu == true) {
+        this.secondlimit = this.paper.timeLimit * 60;
+        //this.secondlimit = 5;
+        let that = this;
+        this.interval = setInterval(function() {
+          if (that.secondlimit == 0) {
+            clearInterval(that.interval);
+            that.submitPaper();
+          } else {
+            that.secondlimit -= 1;
+          }
+        }, 1000);
+      }
     }
   },
   components: {

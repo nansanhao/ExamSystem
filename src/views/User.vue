@@ -28,16 +28,61 @@
               <div class="i-o-content">{{getUser.age}}</div>
             </div>
             <div class="i-o-item">
-              <div class="i-o-title">已做试卷</div>
+              <div class="i-o-title">{{getIsStu==true?"已做试卷":"创建试卷"}}</div>
               <div class="i-o-content">{{getUser.paperNum}}</div>
             </div>
           </div>
         </div>
       </div>
+
       <div class="record">
+        <div class="r-title" v-if="!getIsStu">
+          <i class="el-icon-document"></i>&nbsp;&nbsp;学生做题情况&nbsp;&nbsp;
+        </div>
+        <div class="progress-wrap" v-if="!getIsStu">
+          <div class="progress">
+            <h5>完成的学生</h5>
+            <div>
+                    <el-progress type="circle" width="80" :percentage="90" color="#009688"></el-progress>
+            </div>
+          </div>
+          <div class="progress">
+            <h5>满分率</h5>
+            <div>
+              <el-progress type="circle" width="80" :percentage="20" color="#f56c6c"></el-progress>
+            </div>
+          </div>
+          <div class="progress">
+            <h5>正确率</h5>
+            <div>
+              <el-progress type="circle" width="80" :percentage="50"></el-progress>
+            </div>
+          </div>
+          <div class="progress">
+            <h5>及格率</h5>
+            <div>
+              <el-progress type="circle" width="80" :percentage="60" color="#8e71c7"></el-progress>
+            </div>
+          </div>
+          
+          <div class="progress">
+            <h5>平均分</h5>
+            <div>
+              <el-progress type="circle" width="80" :percentage="100" status="text">75.3分</el-progress>
+            </div>
+          </div>
+        </div>
+
         <div class="r-title">
-          <i class="el-icon-edit"></i>&nbsp;&nbsp;做题记录&nbsp;&nbsp;
-          <el-tooltip class="item" effect="dark" content="新建试卷" placement="top-start">
+          <i class="el-icon-edit"></i>
+          &nbsp;&nbsp;{{getIsStu==true?"做题记录":"创建的试卷"}}&nbsp;&nbsp;
+          <el-tooltip
+            class="item"
+            effect="dark"
+            content="新建试卷"
+            placement="top-start"
+            v-if="!getIsStu"
+          >
             <el-button icon="el-icon-plus" circle @click="PEDialogVisible = true"></el-button>
           </el-tooltip>
         </div>
@@ -50,30 +95,37 @@
           @click.native="GetPaper(index)"
         >
           <div>
+            
             <div class="r-info-1">
-              <div :class="[item.timeConsuming==''?'':'r-i-finish','r-i-name']">{{item.name}}</div>
+              <div :class="[item.timeConsuming===''?'':'r-i-finish','r-i-name']">{{item.name}}</div>
               <div class="r-i-level">
                 <el-rate v-model="item.level" :texts="texts" disabled show-text></el-rate>
               </div>
-              <div class="r-i-date">{{item.date}}</div>
+              
+              <div class="r-i-date">{{item.date}}</div>&nbsp;&nbsp;&nbsp;&nbsp;
+              <el-button v-if="!getIsStu" type="danger" icon="el-icon-delete" circle @click.stop="handleDelete(index)"></el-button>
+
             </div>
             <div class="r-info-2">
               <div class="r-i-time">
                 <div class="r-i-timelimit">限时：{{item.timeLimit}}分钟</div>
                 <div
                   class="r-i-timeconsuming"
-                >耗时：{{item.timeConsuming==""?"未完成":item.timeConsuming+"分钟"}}</div>
+                >耗时：{{item.timeConsuming===""?"未完成":item.timeConsuming+"分钟"}}</div>
               </div>
               <div class="r-i-score">
                 <div class="r-i-totalscore">总分：{{item.total}}</div>
                 <div class="r-i-totalscore">得分：</div>
                 <div
-                  :class="[item.score==''?'':'r-i-finish','r-i-userscore']"
-                >{{item.score==""?"无":item.score}}</div>
+                  :class="[item.score===''?'':'r-i-finish','r-i-userscore']"
+                >{{item.score===""?"无":item.score}}</div>
               </div>
             </div>
+            
           </div>
+          
         </el-card>
+        
       </div>
     </div>
     <!-- Form -->
@@ -106,7 +158,7 @@
 
     <!-- 试卷编辑的模态框 -->
     <el-dialog title="试卷信息" :visible.sync="PEDialogVisible" width="35%">
-      <el-form :model="newPaper" label-width="70px">
+      <el-form :model="newPaper" label-width="100px">
         <el-form-item label="试卷名称">
           <el-input v-model="newPaper.name" autocomplete="off"></el-input>
         </el-form-item>
@@ -117,6 +169,24 @@
             :min="1"
             :max="5"
             label="难度"
+          ></el-input-number>
+        </el-form-item>
+        <el-form-item label="选择题分值">
+          <el-input-number
+            v-model="newPaper.scorePerSC"
+            @change="handleChange"
+            :min="1"
+            :max="10"
+            label="选择题分值"
+          ></el-input-number>
+        </el-form-item>
+        <el-form-item label="填空题分值">
+          <el-input-number
+            v-model="newPaper.scorePerC"
+            @change="handleChange"
+            :min="1"
+            :max="10"
+            label="填空题分值"
           ></el-input-number>
         </el-form-item>
         <el-form-item label="试卷总分">
@@ -160,16 +230,17 @@ export default {
       },
       newPaper: {
         name: "",
-        level: "",
+        level: "1",
         total: "",
         score: "",
-        date: "2019-03-02",
+        date: "",
         timeConsuming: "",
         timeLimit: "",
+        scorePerSC: 5,
+        scorePerC: 2,
         competition: [
           {
-            question:
-              "这是一道示例题目，这里填入答案_______。",
+            question: "这是一道示例题目，这里填入答案_______。",
             answer: ["示例答案"],
             myAnswer: [""]
           }
@@ -193,10 +264,10 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["getIdentity", "getUser", "getBriefPapers"])
+    ...mapGetters(["getIdentity", "getUser", "getBriefPapers", "getIsStu"])
   },
   methods: {
-    ...mapMutations(["init","addPaper"]),
+    ...mapMutations(["init", "addPaper","deletePaper"]),
     GetPaper(index) {
       //点击跳转到paper页面
       this.$router.push({ path: "paper", query: { index } });
@@ -211,22 +282,27 @@ export default {
     PEConfirm() {
       this.PEDialogVisible = false;
       // 向后台发送新建试卷请求
+      let now=new Date();
+      this.newPaper.date=now.getFullYear()+"-"+(now.getMonth()+1)+"-"+now.getDate();
+      
       this.addPaper(this.newPaper);
+      
       
       this.newPaper = {
         name: "",
-        level: "",
+        level: "1",
         total: "",
         score: "",
-        date: "2019-03-02",
+        date: "",
         timeConsuming: "",
         timeLimit: "",
+        scorePerSC: 5,
+        scorePerC: 2,
         competition: [
           {
-            question:
-              "这是一道示例题目，这里填入答案_______。",
+            question: "这是一道示例题目，这里填入答案_______。",
             answer: ["示例答案"],
-            myAnswer: [""]
+            myAnswer: ["示例答案"]
           }
         ],
         singleChoice: [
@@ -241,6 +317,26 @@ export default {
           }
         ]
       };
+    },
+    handleDelete(index){
+      console.log(index);
+      this.$confirm('此操作将永久删除该试卷, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.deletePaper(index);
+          this.$notify({
+              title: "成功",
+              message: "试卷删除成功!",
+              type: "success"
+            });
+        }).catch(() => {
+          this.$notify.info({
+              title: "消息",
+              message: "已经取消删除该试卷！"
+            });         
+        });
     }
   },
   created() {
@@ -420,5 +516,15 @@ export default {
 .el-icon-setting {
   font-size: 24px;
   cursor: pointer;
+}
+.progress {
+  display: flex;
+  width: 100px;
+  flex-direction: column;
+  align-items: center;
+}
+.progress-wrap{
+  display: flex;
+  padding-bottom: 20px;
 }
 </style>

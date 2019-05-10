@@ -3,7 +3,14 @@
     <div class="s-c-wrap">
       <div class="s-c-question">{{index+1+" . "+SC.question}}</div>
       <div class="s-c-answer">
-        <el-radio-group v-model="myAnswer"  @change="handleChange">
+        <el-radio-group v-model="myAnswer"  @change="handleChange" v-if="isStu">
+          <el-radio class="radio" label="A">{{SC.A}}</el-radio>
+          <el-radio class="radio" label="B">{{SC.B}}</el-radio>
+          <el-radio class="radio" label="C">{{SC.C}}</el-radio>
+          <el-radio class="radio" label="D">{{SC.D}}</el-radio>
+        </el-radio-group>
+
+        <el-radio-group  v-if="!isStu">
           <el-radio class="radio" label="A">{{SC.A}}</el-radio>
           <el-radio class="radio" label="B">{{SC.B}}</el-radio>
           <el-radio class="radio" label="C">{{SC.C}}</el-radio>

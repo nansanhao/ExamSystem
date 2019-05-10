@@ -3,8 +3,8 @@
     <div class="home" :style="{height:height+'px'}">
         <div class="content">
             <div class="title">
-                <div>计算机等级考试</div>
-                <div>模拟系统</div>
+                <div>课堂测验系统</div>
+                <!-- <div>模拟系统</div> -->
             </div>
 
             <div class="form">

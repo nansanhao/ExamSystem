@@ -36,7 +36,9 @@
 
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item @click.native="toHomePage">个人主页</el-dropdown-item>
+            <el-dropdown-item @click.native="initSystem">初始化调试</el-dropdown-item>
             <el-dropdown-item @click.native="logout">登出</el-dropdown-item>
+
           </el-dropdown-menu>
         </el-dropdown>
       </div>
@@ -55,6 +57,16 @@ export default {
     ...mapGetters(["getUser"])
   },
   methods: {
+    initSystem(){
+      localStorage.removeItem("ES_papers");
+      this.init("clear");
+      this.$notify.success({
+        title: "成功",
+        message: "试卷初始化成功！",
+        duration: 1000
+      });
+      this.$router.push({ name: "home" });
+    },
     logout() {
       this.init("clear");
       this.$notify.success({

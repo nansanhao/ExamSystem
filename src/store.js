@@ -71,12 +71,16 @@ export default new Vuex.Store({
         },
         submitPaperScore(state,arg){
           state.papers[arg.paperIndex].score=arg.score;
-          state.papers[arg.paperIndex].timeConsuming="35"; 
+          state.papers[arg.paperIndex].timeConsuming=arg.timeConsuming; 
           localStorage.setItem("ES_papers",JSON.stringify(state.papers));
         },
         addPaper(state,newpaper){
             state.papers.unshift(newpaper);
             localStorage.setItem("ES_papers",JSON.stringify(state.papers));  
+        },
+        deletePaper(state,index){
+            state.papers.splice(index,1);
+            localStorage.setItem("ES_papers",JSON.stringify(state.papers));
         },
         changePaper(state,arg){
           state.papers[arg.paperIndex]=arg.paper;
@@ -239,7 +243,7 @@ export default new Vuex.Store({
                           C: "适用于已有产品或产品原型（样品），只需客户化的工程项目",
                           D: "软件开发过程每迭代一次，软件开发又前进一个层次",
                           answer: "A",
-                          myAnswer:"A"
+                          myAnswer:""
                         },
                         {
                           id: "1",
@@ -304,7 +308,7 @@ export default new Vuex.Store({
                           question:
                             "计算机网络由负责信息处理的资源子网和负贵信息传递的_______组成。",
                           answer: ["接收方窗口"],
-                          myAnswer: ["接收方窗口"]
+                          myAnswer: [""]
                         },
                         {
                           question:
@@ -347,7 +351,7 @@ export default new Vuex.Store({
                           C: "适用于已有产品或产品原型（样品），只需客户化的工程项目",
                           D: "软件开发过程每迭代一次，软件开发又前进一个层次",
                           answer: "A",
-                          myAnswer:"A"
+                          myAnswer:""
                         },
                         {
                           id: "1",
@@ -412,7 +416,7 @@ export default new Vuex.Store({
                           question:
                             "计算机网络由负责信息处理的资源子网和负贵信息传递的_______组成。",
                           answer: ["接收方窗口"],
-                          myAnswer: ["接收方窗口"]
+                          myAnswer: [""]
                         },
                         {
                           question:
@@ -456,7 +460,7 @@ export default new Vuex.Store({
                           C: "适用于已有产品或产品原型（样品），只需客户化的工程项目",
                           D: "软件开发过程每迭代一次，软件开发又前进一个层次",
                           answer: "A",
-                          myAnswer:"A"
+                          myAnswer:""
                         },
                         {
                           id: "1",
@@ -521,7 +525,7 @@ export default new Vuex.Store({
                           question:
                             "计算机网络由负责信息处理的资源子网和负贵信息传递的_______组成。",
                           answer: ["接收方窗口"],
-                          myAnswer: ["接收方窗口"]
+                          myAnswer: [""]
                         },
                         {
                           question:
@@ -564,7 +568,7 @@ export default new Vuex.Store({
                           C: "适用于已有产品或产品原型（样品），只需客户化的工程项目",
                           D: "软件开发过程每迭代一次，软件开发又前进一个层次",
                           answer: "A",
-                          myAnswer:"A"
+                          myAnswer:""
                         },
                         {
                           id: "1",
@@ -629,7 +633,7 @@ export default new Vuex.Store({
                           question:
                             "计算机网络由负责信息处理的资源子网和负贵信息传递的_______组成。",
                           answer: ["接收方窗口"],
-                          myAnswer: ["接收方窗口"]
+                          myAnswer: [""]
                         },
                         {
                           question:

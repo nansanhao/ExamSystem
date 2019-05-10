@@ -4,8 +4,11 @@
     <div class="c-answer">
       <div class="c-a-item" v-for="(item,answerIndex) in competition.answer" :key="answerIndex">
         <div class="c-a-index">{{'（'+(answerIndex+1)+'）'}}</div>
-        <span class="c-a-input">
+        <span class="c-a-input" v-if="isStu">
           <input type="text" v-model="myAnswer[answerIndex]" @input="handleInput">
+        </span>
+        <span class="c-a-input" v-if="!isStu">
+          <input type="text">
         </span>
         <span :class="[myAnswer[answerIndex]==item?'correct':'wrong']" v-if="isCheck">
           {{"正确答案："+competition.answer[answerIndex]}}
